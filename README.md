@@ -15,7 +15,7 @@
 ```bash
 # 1. 샘플(가짜) 데이터로 먼저 화면 확인  (macOS / Linux / Git Bash)
 ./gradlew bootRun --args="--app.import.path=sample-data/"
-# 2. http://localhost:8080 접속
+# 2. http://localhost:8081 접속
 ```
 
 Windows 에서는 `./gradlew` 대신 `gradlew`(cmd) 또는 `.\gradlew`(PowerShell) 를 쓰고, 인수는 **큰따옴표**로 감쌉니다.
@@ -51,7 +51,7 @@ gradlew bootRun --args="--app.import.path=sample-data/"
 | Gradle 동기화가 "호환되지 않는 Java" 로 실패 | Gradle JVM 을 JDK 21 이상으로 지정 (위 IntelliJ 설정 참고). Gradle 래퍼는 9.8.0 이라 JDK 25 까지 지원합니다. |
 | IntelliJ 로 실행하면 `NoClassDefFoundError: com/fasterxml/classmate/TypeResolver` | 최신 코드를 받고 *Reload All Gradle Projects* 후 다시 실행하세요. 그래도 나면 터미널에서 `gradlew bootRun --args="..."` 로 실행하세요. (Gradle 이 직접 클래스패스를 만들어서 영향이 없어요.) |
 | 위 오류가 계속될 때 확인 | File → Project Structure → Libraries 에 `classmate` 가 있는지, 빨갛게 깨져 있지는 않은지 봅니다. 깨져 있으면 `~/.gradle/caches/modules-2/files-2.1/com.fasterxml/classmate` 폴더를 지우고 `gradlew build --refresh-dependencies` 후 다시 Reload 하세요. |
-| 8080 포트가 이미 사용 중 | `--server.port=8081` 을 프로그램 인수에 추가 |
+| `Port 8081 was already in use` | 기본 포트는 8081 입니다. 다른 앱과 겹치면 프로그램 인수에 `--server.port=9090` 을 추가하세요. 누가 쓰는지는 `netstat -ano \| findstr :8081` 로 PID 를 찾아 확인합니다. |
 
 ## 기능
 

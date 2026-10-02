@@ -1,3 +1,8 @@
+server:
+  # 8080 은 다른 Spring Boot 프로젝트와 겹치기 쉬워 8081 을 쓴다.
+  # 바꾸려면 프로그램 인수 --server.port=9090 또는 환경변수 SERVER_PORT=9090
+  port: 8081
+
 spring:
   datasource:
     # 로컬 파일 DB. 서버를 껐다 켜도 적재한 데이터가 남는다. (MySQL 등으로 바꿀 땐 url/driver만 교체)
