@@ -22,6 +22,10 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
     implementation 'org.apache.commons:commons-csv:1.14.0'
     runtimeOnly 'com.h2database:h2'
+    // hibernate-core 가 런타임에 쓰는 라이브러리인데 IntelliJ 가 만든 실행 클래스패스에서
+    // 이것만 빠져 NoClassDefFoundError(com/fasterxml/classmate/TypeResolver)가 난 적이 있다.
+    // Gradle 로 직접 선언해 두면 IDE 모델에도 최상위 의존성으로 들어간다. (버전은 Spring Boot BOM)
+    runtimeOnly 'com.fasterxml:classmate'
 
     testImplementation 'org.springframework.boot:spring-boot-starter-test'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
