@@ -29,9 +29,20 @@ class AddressParserTest {
     }
 
     @Test
-    @DisplayName("도로명주소나 다른 지역이면 미상")
+    @DisplayName("도로명주소는 끝의 괄호 안 법정동을 쓴다")
+    void usesParenthesizedDongOfRoadAddress() {
+        assertThat(AddressParser.extractDistrict("경기도 김포시 김포한강9로76번길 37, 2층 201호 (구래동)", "김포시")).isEqualTo("구래동");
+        assertThat(AddressParser.extractDistrict("경기도 김포시 금파로 1 (걸포동, 계양천 산책로 일대)", "김포시")).isEqualTo("걸포동");
+        assertThat(AddressParser.extractDistrict("경기도 김포시 관순로 28, 106호 (사우동, 현중빌딩)", "김포시")).isEqualTo("사우동");
+        // 읍·면은 도로명 주소에서도 시 바로 뒤에 온다
+        assertThat(AddressParser.extractDistrict("경기도 김포시 고촌읍 신곡로3번길 43-26, 1층", "김포시")).isEqualTo("고촌읍");
+    }
+
+    @Test
+    @DisplayName("괄호에 동이 없거나 다른 지역이면 미상")
     void returnsUnknownForRoadAddressOrOtherRegion() {
         assertThat(AddressParser.extractDistrict("경기도 김포시 김포한강9로 123", "김포시")).isEqualTo("미상");
+        assertThat(AddressParser.extractDistrict("경기도 김포시 아라육로58번길 97 (3층,4층,5층일부)", "김포시")).isEqualTo("미상");
         assertThat(AddressParser.extractDistrict("서울특별시 강서구 화곡동 1-1", "김포시")).isEqualTo("미상");
         assertThat(AddressParser.extractDistrict(null, "김포시")).isEqualTo("미상");
         assertThat(AddressParser.extractDistrict("  ", "김포시")).isEqualTo("미상");

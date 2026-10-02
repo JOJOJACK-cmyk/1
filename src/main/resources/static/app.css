@@ -81,6 +81,7 @@ pre { background: var(--page); border: 1px solid var(--border); border-radius: 8
 .card-tools { display: flex; align-items: center; gap: 16px; }
 .scope { margin: 2px 0 0; font-size: 12px; color: var(--text-muted); }
 .note { margin: 12px 0 0; font-size: 12px; color: var(--text-muted); }
+.note:empty { display: none; }
 
 .legend { display: flex; gap: 16px; margin: 0; padding: 0; list-style: none; font-size: 13px; color: var(--text-secondary); }
 .legend li { display: flex; align-items: center; gap: 6px; }

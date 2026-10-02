@@ -269,6 +269,13 @@
       el.appendChild(unit);
     });
 
+    // 원본의 업태 분류가 '기타'로 몰려 있으면 업종별 순위를 곧이곧대로 읽지 않도록 알린다.
+    const etc = r.opened.find((c) => c.category === '기타');
+    const etcShare = etc && r.openedTotal > 0 ? etc.count / r.openedTotal : 0;
+    $('note-ranking').textContent = etcShare >= 0.2
+      ? `※ 이 기간 개업의 ${Math.round(etcShare * 100)}%가 원본 데이터에서 '기타' 업종으로 기록돼 있어요. 업종 분류가 부정확해서 업종별 순위와 추세는 참고용으로 봐주세요.`
+      : '';
+
     const rows = Array.from({ length: Math.max(r.opened.length, r.closed.length) }, (_, i) => [
       `${i + 1}`,
       r.opened[i] ? r.opened[i].category : '', r.opened[i] ? `${fmt.format(r.opened[i].count)}곳` : '',
