@@ -10,6 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.LocalDate;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -36,7 +37,8 @@ class CsvImportServiceTest {
     }
 
     @Test
-    void 김포_행만_적재하고_나머지는_센다() throws Exception {
+    @DisplayName("김포 행만 적재하고 나머지는 센다")
+    void importsOnlyRegionRowsAndCountsTheRest() throws Exception {
         ImportResult result = importService.importFile(testCsv());
 
         assertThat(result.read()).isEqualTo(7);
@@ -47,7 +49,8 @@ class CsvImportServiceTest {
     }
 
     @Test
-    void 필드가_제대로_변환된다() throws Exception {
+    @DisplayName("필드가 제대로 변환된다")
+    void convertsFields() throws Exception {
         importService.importFile(testCsv());
 
         Business a = repository.findByExternalIdIn(java.util.List.of("일반음식점:T-001")).get(0);
@@ -65,7 +68,8 @@ class CsvImportServiceTest {
     }
 
     @Test
-    void 같은_파일을_다시_적재해도_중복되지_않는다() throws Exception {
+    @DisplayName("같은 파일을 다시 적재해도 중복되지 않는다")
+    void reimportDoesNotDuplicate() throws Exception {
         importService.importFile(testCsv());
         ImportResult second = importService.importFile(testCsv());
 
@@ -75,7 +79,8 @@ class CsvImportServiceTest {
     }
 
     @Test
-    void CP949_파일도_읽는다(@TempDir Path dir) throws Exception {
+    @DisplayName("CP949 파일도 읽는다")
+    void readsCp949File(@TempDir Path dir) throws Exception {
         String text = Files.readString(testCsv());
         Path cp949 = dir.resolve("cp949.csv");
         Files.write(cp949, text.getBytes(Charset.forName("MS949")));
@@ -88,7 +93,8 @@ class CsvImportServiceTest {
     }
 
     @Test
-    void BOM이_붙은_UTF8도_읽는다(@TempDir Path dir) throws Exception {
+    @DisplayName("BOM이 붙은 UTF8도 읽는다")
+    void readsUtf8WithBom(@TempDir Path dir) throws Exception {
         String text = "﻿" + Files.readString(testCsv());
         Path bom = dir.resolve("bom.csv");
         Files.writeString(bom, text);
@@ -97,7 +103,8 @@ class CsvImportServiceTest {
     }
 
     @Test
-    void 필수_컬럼이_없으면_이유를_알려준다(@TempDir Path dir) throws Exception {
+    @DisplayName("필수 컬럼이 없으면 이유를 알려준다")
+    void explainsMissingRequiredColumn(@TempDir Path dir) throws Exception {
         Path bad = dir.resolve("bad.csv");
         Files.writeString(bad, "이름,주소\n가게,김포시 사우동 1\n");
 
@@ -107,7 +114,8 @@ class CsvImportServiceTest {
     }
 
     @Test
-    void 폴더를_주면_안의_csv를_모두_적재한다(@TempDir Path dir) throws Exception {
+    @DisplayName("폴더를 주면 안의 csv를 모두 적재한다")
+    void importsAllCsvFilesInDirectory(@TempDir Path dir) throws Exception {
         Files.copy(testCsv(), dir.resolve("a.csv"));
         Files.writeString(dir.resolve("readme.txt"), "무시되어야 함");
 

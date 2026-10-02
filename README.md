@@ -10,21 +10,32 @@
 
 ## 빠른 시작
 
-필요한 것: JDK 21 (Gradle은 `./gradlew` 가 알아서 받아요. DB 설치도 필요 없어요.)
+필요한 것: **JDK 21 이상** (21, 25에서 테스트 확인). Gradle은 `./gradlew` 가 알아서 받고, DB 설치도 필요 없어요.
 
 ```bash
-# 1. 샘플(가짜) 데이터로 먼저 화면 확인
-./gradlew bootRun --args='--app.import.path=sample-data/'
+# 1. 샘플(가짜) 데이터로 먼저 화면 확인  (macOS / Linux / Git Bash)
+./gradlew bootRun --args="--app.import.path=sample-data/"
 # 2. http://localhost:8080 접속
 ```
 
-적재한 데이터는 `./data/` 의 H2 파일 DB에 남아서, 다음부터는 `./gradlew bootRun` 만 해도 됩니다.
+Windows 에서는 `./gradlew` 대신 `gradlew`(cmd) 또는 `.\gradlew`(PowerShell) 를 쓰고, 인수는 **큰따옴표**로 감쌉니다.
+
+```bat
+gradlew bootRun --args="--app.import.path=sample-data/"
+```
+
+**IntelliJ 에서 실행하기**
+
+1. Settings → Build, Execution, Deployment → Build Tools → Gradle → **Gradle JVM** 을 JDK 21 이상으로 고르고, Gradle 창에서 *Reload All Gradle Projects* 를 누릅니다.
+2. `GimpoBizDashboardApplication` 실행 구성의 **프로그램 인수**에 `--app.import.path=sample-data/` 를 넣고, 작업 디렉터리는 프로젝트 루트로 둡니다. (한 번 적재하면 다음부터는 인수 없이 실행해도 돼요.)
+
+적재한 데이터는 `./data/` 의 H2 파일 DB에 남아서, 다음부터는 인수 없이 실행해도 됩니다.
 
 ### 실제 김포 데이터로 돌리기
 
 1. 지방행정 인허가 데이터(공공데이터포털 또는 지방행정 인허가 데이터개방)에서 **김포시 일반음식점 / 휴게음식점 CSV** 를 받아 `import/` 폴더에 넣습니다.
    (제공 방식과 컬럼은 바뀔 수 있으니 받은 파일의 헤더를 직접 열어 확인하세요.)
-2. `./gradlew bootRun --args='--app.import.path=import/'`
+2. `./gradlew bootRun --args="--app.import.path=import/"` (Windows cmd 는 `gradlew ...`)
    - 폴더를 주면 안의 `*.csv` 를 전부 적재합니다. 같은 파일을 다시 적재해도 **중복 없이 갱신**돼요.
    - CP949(EUC-KR)·UTF-8(BOM 포함) 인코딩을 자동으로 구분합니다.
    - 전국 파일을 받아도 주소에 `김포시` 가 없는 행은 걸러냅니다 (`app.import.region-keyword`).

@@ -7,10 +7,10 @@ plugins {
 group = 'com.gimpo'
 version = '0.0.1-SNAPSHOT'
 
-java {
-    toolchain {
-        languageVersion = JavaLanguageVersion.of(21)
-    }
+// toolchain 대신 release 로 바이트코드 버전만 21 에 맞춘다.
+// 그러면 JDK 21 이상(21~25)이 하나만 깔려 있어도 별도 JDK 다운로드 없이 빌드된다.
+tasks.withType(JavaCompile).configureEach {
+    options.release = 21
 }
 
 repositories {

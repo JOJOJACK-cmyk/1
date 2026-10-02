@@ -8,6 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.gimpo.bizdash.domain.BusinessRepository;
 import com.gimpo.bizdash.importer.CsvImportService;
 import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -42,7 +43,8 @@ class StatsApiTest {
     }
 
     @Test
-    void meta는_건수와_기준일과_필터_후보를_준다() throws Exception {
+    @DisplayName("meta는 건수와 기준일과 필터 후보를 준다")
+    void metaReturnsCountAsOfAndFilterOptions() throws Exception {
         mvc.perform(get("/api/meta"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.total").value(5))
@@ -53,7 +55,8 @@ class StatsApiTest {
     }
 
     @Test
-    void 연도별_추이는_없는_해를_0으로_채운다() throws Exception {
+    @DisplayName("연도별 추이는 없는 해를 0으로 채운다")
+    void trendFillsMissingYearsWithZero() throws Exception {
         mvc.perform(get("/api/trend").param("years", "5"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.points", hasSize(5)))
@@ -69,7 +72,8 @@ class StatsApiTest {
     }
 
     @Test
-    void 동네와_업종으로_거를_수_있다() throws Exception {
+    @DisplayName("동네와 업종으로 거를 수 있다")
+    void trendCanBeFilteredByDistrictAndCategory() throws Exception {
         // 구래동 한식: 개업 A(2022) B(2023), 폐업 A(2024)
         mvc.perform(get("/api/trend").param("years", "3").param("district", "구래동").param("category", "한식"))
                 .andExpect(jsonPath("$.points[0].year").value(2022))
@@ -79,7 +83,8 @@ class StatsApiTest {
     }
 
     @Test
-    void 업종별_영업기간은_폐업한_곳_기준이다() throws Exception {
+    @DisplayName("업종별 영업기간은 폐업한 곳 기준이다")
+    void survivalIsBasedOnClosedBusinesses() throws Exception {
         // 한식: A 2.0년, D 4.0년 → 평균·중앙값 3.0 / 카페: C 1.0년
         mvc.perform(get("/api/survival").param("minSample", "1"))
                 .andExpect(status().isOk())
@@ -93,14 +98,16 @@ class StatsApiTest {
     }
 
     @Test
-    void 표본이_적은_업종은_영업기간에서_뺀다() throws Exception {
+    @DisplayName("표본이 적은 업종은 영업기간에서 뺀다")
+    void survivalExcludesSmallSamples() throws Exception {
         mvc.perform(get("/api/survival").param("minSample", "2"))
                 .andExpect(jsonPath("$", hasSize(1)))
                 .andExpect(jsonPath("$[0].category").value("한식"));
     }
 
     @Test
-    void 최근_12개월_랭킹은_데이터_마지막_날짜를_기준으로_한다() throws Exception {
+    @DisplayName("최근 12개월 랭킹은 데이터 마지막 날짜를 기준으로 한다")
+    void rankingUsesLatestDataDateAsReference() throws Exception {
         // 기간: 2023-06-01 초과 ~ 2024-06-01 이하
         mvc.perform(get("/api/ranking").param("months", "12"))
                 .andExpect(status().isOk())
@@ -116,7 +123,8 @@ class StatsApiTest {
     }
 
     @Test
-    void 읍면동별_개폐업() throws Exception {
+    @DisplayName("읍면동별 개폐업")
+    void districtsCompareOpeningsAndClosings() throws Exception {
         mvc.perform(get("/api/districts").param("months", "12"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.rows", hasSize(2)))
@@ -130,7 +138,8 @@ class StatsApiTest {
     }
 
     @Test
-    void 데이터가_없어도_빈_응답을_준다() throws Exception {
+    @DisplayName("데이터가 없어도 빈 응답을 준다")
+    void returnsEmptyResponsesWithoutData() throws Exception {
         repository.deleteAll();
         mvc.perform(get("/api/trend")).andExpect(status().isOk()).andExpect(jsonPath("$.points", hasSize(0)));
         mvc.perform(get("/api/ranking")).andExpect(status().isOk()).andExpect(jsonPath("$.opened", hasSize(0)));

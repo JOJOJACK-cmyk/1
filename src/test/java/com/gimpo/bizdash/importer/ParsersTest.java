@@ -4,12 +4,14 @@ import static org.assertj.core.api.Assertions.assertThat;
 
 import com.gimpo.bizdash.domain.BusinessStatus;
 import java.time.LocalDate;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 class ParsersTest {
 
     @Test
-    void 날짜는_여러_형식을_받는다() {
+    @DisplayName("날짜는 여러 형식을 받는다")
+    void parsesSeveralDateFormats() {
         LocalDate expected = LocalDate.of(2024, 3, 15);
         assertThat(DateParser.parse("2024-03-15")).isEqualTo(expected);
         assertThat(DateParser.parse("20240315")).isEqualTo(expected);
@@ -19,7 +21,8 @@ class ParsersTest {
     }
 
     @Test
-    void 비었거나_깨진_날짜는_null() {
+    @DisplayName("비었거나 깨진 날짜는 null")
+    void returnsNullForBlankOrBrokenDates() {
         assertThat(DateParser.parse(null)).isNull();
         assertThat(DateParser.parse("")).isNull();
         assertThat(DateParser.parse("0000-00-00")).isNull();
@@ -28,7 +31,8 @@ class ParsersTest {
     }
 
     @Test
-    void 영업상태를_단순화한다() {
+    @DisplayName("영업상태를 단순화한다")
+    void simplifiesBusinessStatus() {
         assertThat(BusinessStatus.fromLabel("영업/정상")).isEqualTo(BusinessStatus.OPEN);
         assertThat(BusinessStatus.fromLabel("폐업")).isEqualTo(BusinessStatus.CLOSED);
         assertThat(BusinessStatus.fromLabel("휴업")).isEqualTo(BusinessStatus.SUSPENDED);
@@ -37,7 +41,8 @@ class ParsersTest {
     }
 
     @Test
-    void 업종을_표준화한다() {
+    @DisplayName("업종을 표준화한다")
+    void normalizesCategories() {
         assertThat(CategoryNormalizer.normalize("커피숍")).isEqualTo("카페");
         assertThat(CategoryNormalizer.normalize("까페")).isEqualTo("카페");
         assertThat(CategoryNormalizer.normalize(" 한식 ")).isEqualTo("한식");
