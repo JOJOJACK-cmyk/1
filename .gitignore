@@ -6,4 +6,5 @@ data/
 .idea/
 .vscode/
 # 공공데이터 원본 CSV는 용량·라이선스 문제로 커밋하지 않는다 (sample-data/ 의 가짜 데이터만 커밋)
-import/
+import/*
+!import/README.md

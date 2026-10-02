@@ -21,6 +21,7 @@ spring:
 
 app:
   import:
-    path:            # 예) --app.import.path=import/  (CSV 파일 또는 폴더)
+    # 서버가 시작될 때 이 폴더의 *.csv 를 자동으로 적재한다 (폴더가 없으면 건너뜀). 같은 파일은 중복 없이 갱신.
+    path: import/
     region-keyword: 김포시
     batch-size: 500

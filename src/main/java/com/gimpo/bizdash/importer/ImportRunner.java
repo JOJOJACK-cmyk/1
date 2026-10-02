@@ -8,7 +8,7 @@ import org.springframework.boot.ApplicationArguments;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.stereotype.Component;
 
-/** app.import.path 가 지정되면 서버 시작 시 CSV를 적재한다. 예) ./gradlew bootRun --args='--app.import.path=import/' */
+/** 서버 시작 시 app.import.path(기본 import/)의 CSV 를 적재한다. 같은 파일을 다시 적재해도 중복되지 않는다. */
 @Component
 public class ImportRunner implements ApplicationRunner {
 
@@ -29,7 +29,7 @@ public class ImportRunner implements ApplicationRunner {
         }
         Path path = Path.of(props.path());
         if (!Files.exists(path)) {
-            log.warn("app.import.path 를 찾을 수 없습니다: {}", path.toAbsolutePath());
+            log.info("적재할 CSV 폴더가 없어 건너뜁니다: {} (CSV 를 넣고 다시 실행하면 자동 적재돼요)", path.toAbsolutePath());
             return;
         }
         log.info("CSV 적재 시작: {}", path.toAbsolutePath());
