@@ -13,6 +13,14 @@ tasks.withType(JavaCompile).configureEach {
     options.release = 21
 }
 
+// 샘플 CSV 는 sample-data/ 한 곳에만 두고, 빌드할 때 클래스패스(sample/)로 복사한다.
+// 화면의 "샘플 데이터 불러오기" 버튼이 실행 위치와 상관없이 이 파일을 읽는다.
+tasks.named('processResources') {
+    from('sample-data') {
+        into 'sample'
+    }
+}
+
 repositories {
     mavenCentral()
 }

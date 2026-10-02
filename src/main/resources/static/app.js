@@ -351,6 +351,23 @@
     });
   }
 
+  /** 빈 화면의 버튼: 서버가 들고 있는 가짜 샘플 CSV 를 적재하고 화면을 새로 연다. */
+  async function loadSample() {
+    const button = $('load-sample');
+    const status = $('sample-status');
+    button.disabled = true;
+    status.textContent = '불러오는 중이에요… 몇 초 걸려요.';
+    try {
+      const res = await fetch('/api/import/sample', { method: 'POST' });
+      const body = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(body.message || `HTTP ${res.status}`);
+      location.reload();
+    } catch (e) {
+      status.textContent = `실패했어요: ${e.message}`;
+      button.disabled = false;
+    }
+  }
+
   async function init() {
     if (reducedMotion) Chart.defaults.animation = false;
     Chart.defaults.font.family = FONT;
@@ -360,6 +377,7 @@
     if (meta.total === 0) {
       $('empty').hidden = false;
       $('content').hidden = true;
+      $('load-sample').addEventListener('click', loadSample);
       return;
     }
     $('asof').textContent = `기준일 ${meta.asOf} · 적재 ${fmt.format(meta.total)}곳`;

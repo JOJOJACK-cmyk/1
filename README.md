@@ -13,29 +13,27 @@
 필요한 것: **JDK 21 이상** (21, 25에서 테스트 확인). Gradle은 `./gradlew` 가 알아서 받고, DB 설치도 필요 없어요.
 
 ```bash
-# 1. 샘플(가짜) 데이터로 먼저 화면 확인  (macOS / Linux / Git Bash)
-./gradlew bootRun --args="--app.import.path=sample-data/"
-# 2. http://localhost:8081 접속
+./gradlew bootRun          # macOS / Linux / Git Bash   (Windows cmd: gradlew bootRun, PowerShell: .\gradlew bootRun)
 ```
 
-Windows 에서는 `./gradlew` 대신 `gradlew`(cmd) 또는 `.\gradlew`(PowerShell) 를 쓰고, 인수는 **큰따옴표**로 감쌉니다.
+서버가 뜨면 **http://localhost:8081** 에 접속해서 **[샘플 데이터 불러오기]** 버튼을 누르세요. 가짜 데이터 3,600건이 적재되고 화면이 채워집니다.
+터미널 인수나 따옴표 없이 되기 때문에 처음에는 이 방법을 권해요. (DB가 비어 있을 때만 동작해서, 실제 데이터에 가짜 데이터가 섞이지 않아요.)
 
-```bat
-gradlew bootRun --args="--app.import.path=sample-data/"
-```
+> 서버는 **한 번에 하나만** 실행하세요. 같은 DB 파일(`data/`)을 두 개가 동시에 열 수 없어서, IntelliJ에서 실행 중인데 터미널에서 또 `bootRun` 하면 `Database may be already in use` 로 죽습니다.
 
 **IntelliJ 에서 실행하기**
 
 1. Settings → Build, Execution, Deployment → Build Tools → Gradle → **Gradle JVM** 을 JDK 21 이상으로 고르고, Gradle 창에서 *Reload All Gradle Projects* 를 누릅니다.
-2. `GimpoBizDashboardApplication` 실행 구성의 **프로그램 인수**에 `--app.import.path=sample-data/` 를 넣고, 작업 디렉터리는 프로젝트 루트로 둡니다. (한 번 적재하면 다음부터는 인수 없이 실행해도 돼요.)
+2. `GimpoBizDashboardApplication` 을 실행하고 브라우저에서 위 버튼을 누르면 끝이에요. 프로그램 인수는 필요 없습니다.
 
-적재한 데이터는 `./data/` 의 H2 파일 DB에 남아서, 다음부터는 인수 없이 실행해도 됩니다.
+적재한 데이터는 `./data/` 의 H2 파일 DB에 남아서, 다음 실행부터는 바로 화면이 뜹니다.
+처음부터 다시 하고 싶으면 서버를 끄고 `data/` 폴더를 지우세요.
 
 ### 실제 김포 데이터로 돌리기
 
 1. 지방행정 인허가 데이터(공공데이터포털 또는 지방행정 인허가 데이터개방)에서 **김포시 일반음식점 / 휴게음식점 CSV** 를 받아 `import/` 폴더에 넣습니다.
    (제공 방식과 컬럼은 바뀔 수 있으니 받은 파일의 헤더를 직접 열어 확인하세요.)
-2. `./gradlew bootRun --args="--app.import.path=import/"` (Windows cmd 는 `gradlew ...`)
+2. **실행 중인 서버를 먼저 종료**하고 `./gradlew bootRun --args="--app.import.path=import/"` (Windows cmd 는 `gradlew ...`, IntelliJ 는 프로그램 인수에 `--app.import.path=import/`)
    - 폴더를 주면 안의 `*.csv` 를 전부 적재합니다. 같은 파일을 다시 적재해도 **중복 없이 갱신**돼요.
    - CP949(EUC-KR)·UTF-8(BOM 포함) 인코딩을 자동으로 구분합니다.
    - 전국 파일을 받아도 주소에 `김포시` 가 없는 행은 걸러냅니다 (`app.import.region-keyword`).
@@ -51,6 +49,7 @@ gradlew bootRun --args="--app.import.path=sample-data/"
 | Gradle 동기화가 "호환되지 않는 Java" 로 실패 | Gradle JVM 을 JDK 21 이상으로 지정 (위 IntelliJ 설정 참고). Gradle 래퍼는 9.8.0 이라 JDK 25 까지 지원합니다. |
 | IntelliJ 로 실행하면 `NoClassDefFoundError: com/fasterxml/classmate/TypeResolver` | 최신 코드를 받고 *Reload All Gradle Projects* 후 다시 실행하세요. 그래도 나면 터미널에서 `gradlew bootRun --args="..."` 로 실행하세요. (Gradle 이 직접 클래스패스를 만들어서 영향이 없어요.) |
 | 위 오류가 계속될 때 확인 | File → Project Structure → Libraries 에 `classmate` 가 있는지, 빨갛게 깨져 있지는 않은지 봅니다. 깨져 있으면 `~/.gradle/caches/modules-2/files-2.1/com.fasterxml/classmate` 폴더를 지우고 `gradlew build --refresh-dependencies` 후 다시 Reload 하세요. |
+| `Database may be already in use ... The file is locked` | 이 앱이 **이미 실행 중**이라는 뜻이에요. IntelliJ 실행 창(■ 정지)이나 이미 띄운 터미널을 먼저 종료하고 다시 실행하세요. 한 번에 하나만 실행할 수 있어요. |
 | `Port 8081 was already in use` | 기본 포트는 8081 입니다. 다른 앱과 겹치면 프로그램 인수에 `--server.port=9090` 을 추가하세요. 누가 쓰는지는 `netstat -ano \| findstr :8081` 로 PID 를 찾아 확인합니다. |
 
 ## 기능

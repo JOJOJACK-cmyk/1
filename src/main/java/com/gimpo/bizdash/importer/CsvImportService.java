@@ -65,7 +65,12 @@ public class CsvImportService {
     }
 
     public ImportResult importFile(Path file) throws IOException {
-        String text = decode(Files.readAllBytes(file));
+        return importBytes(Files.readAllBytes(file), file.getFileName().toString());
+    }
+
+    /** @param sourceName 로그에 찍을 이름 (파일명 등) */
+    public ImportResult importBytes(byte[] bytes, String sourceName) throws IOException {
+        String text = decode(bytes);
         long read = 0, inserted = 0, updated = 0, outOfRegion = 0, invalid = 0;
 
         try (CSVParser parser = FORMAT.parse(new StringReader(text))) {
@@ -96,7 +101,7 @@ public class CsvImportService {
         }
 
         ImportResult result = new ImportResult(read, inserted, updated, outOfRegion, invalid);
-        log.info("{} 적재 완료: {}", file.getFileName(), result);
+        log.info("{} 적재 완료: {}", sourceName, result);
         return result;
     }
 
