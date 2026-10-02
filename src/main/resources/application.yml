@@ -25,3 +25,11 @@ app:
     path: import/
     region-keyword: 김포시
     batch-size: 500
+  fetch:
+    # true 면 서버 시작 때 아래 주소에서 CSV(또는 CSV가 든 zip)를 내려받아 import/ 에 저장한 뒤 적재한다.
+    # 받아 둔 파일이 max-age-days 이내면 다시 받지 않고, 내려받기에 실패해도 서버는 정상 시작한다.
+    enabled: true
+    max-age-days: 7
+    sources:
+      - name: rest_cafes        # 저장 파일명: import/rest_cafes.csv
+        url: https://file.localdata.go.kr/file/download/rest_cafes/info

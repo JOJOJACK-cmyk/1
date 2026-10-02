@@ -2,11 +2,16 @@ package com.gimpo.bizdash.importer;
 
 import com.gimpo.bizdash.domain.Business;
 import com.gimpo.bizdash.domain.BusinessRepository;
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.StringReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.nio.ByteBuffer;
-import java.nio.charset.CharacterCodingException;
+import java.nio.CharBuffer;
 import java.nio.charset.Charset;
+import java.nio.charset.CoderResult;
 import java.nio.charset.CodingErrorAction;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -30,6 +35,7 @@ public class CsvImportService {
 
     private static final Logger log = LoggerFactory.getLogger(CsvImportService.class);
     private static final Charset CP949 = Charset.forName("MS949");
+    private static final int SNIFF_BYTES = 64 * 1024;
 
     private static final CSVFormat FORMAT = CSVFormat.DEFAULT.builder()
             .setHeader()
@@ -65,15 +71,26 @@ public class CsvImportService {
     }
 
     public ImportResult importFile(Path file) throws IOException {
-        return importBytes(Files.readAllBytes(file), file.getFileName().toString());
+        try (InputStream in = Files.newInputStream(file)) {
+            return importStream(in, file.getFileName().toString());
+        }
     }
 
-    /** @param sourceName 로그에 찍을 이름 (파일명 등) */
     public ImportResult importBytes(byte[] bytes, String sourceName) throws IOException {
-        String text = decode(bytes);
+        return importStream(new ByteArrayInputStream(bytes), sourceName);
+    }
+
+    /**
+     * 파일 전체를 메모리에 올리지 않고 한 줄씩 읽어 적재한다. (전국 단위 수백 MB 파일도 처리)
+     *
+     * @param sourceName 로그에 찍을 이름 (파일명 등)
+     */
+    public ImportResult importStream(InputStream raw, String sourceName) throws IOException {
+        BufferedInputStream in = new BufferedInputStream(raw, SNIFF_BYTES);
+        Charset charset = sniffCharset(in);
         long read = 0, inserted = 0, updated = 0, outOfRegion = 0, invalid = 0;
 
-        try (CSVParser parser = FORMAT.parse(new StringReader(text))) {
+        try (Reader reader = new InputStreamReader(in, charset); CSVParser parser = FORMAT.parse(reader)) {
             CsvRowParser rowParser = new CsvRowParser(parser.getHeaderNames(), props.regionKeyword());
             Map<String, Business> batch = new LinkedHashMap<>();
 
@@ -131,21 +148,23 @@ public class CsvImportService {
         });
     }
 
-    /** 공공데이터 CSV는 CP949(EUC-KR 확장)인 경우가 많다. UTF-8로 깨끗하게 읽히면 UTF-8, 아니면 CP949. */
-    static String decode(byte[] bytes) {
-        try {
-            String utf8 = StandardCharsets.UTF_8.newDecoder()
-                    .onMalformedInput(CodingErrorAction.REPORT)
-                    .onUnmappableCharacter(CodingErrorAction.REPORT)
-                    .decode(ByteBuffer.wrap(bytes))
-                    .toString();
-            return stripBom(utf8);
-        } catch (CharacterCodingException e) {
-            return stripBom(new String(bytes, CP949));
+    /**
+     * 공공데이터 CSV는 CP949(EUC-KR 확장)인 경우가 많다. 파일 앞부분이 UTF-8로 깨끗하게 읽히면 UTF-8, 아니면 CP949.
+     * 헤더가 한글이라 앞부분만으로 충분히 판별된다. UTF-8 BOM 은 여기서 건너뛴다.
+     */
+    static Charset sniffCharset(BufferedInputStream in) throws IOException {
+        in.mark(SNIFF_BYTES);
+        byte[] head = in.readNBytes(SNIFF_BYTES);
+        in.reset();
+        if (head.length >= 3 && head[0] == (byte) 0xEF && head[1] == (byte) 0xBB && head[2] == (byte) 0xBF) {
+            in.skipNBytes(3);
+            return StandardCharsets.UTF_8;
         }
-    }
-
-    private static String stripBom(String s) {
-        return !s.isEmpty() && s.charAt(0) == '﻿' ? s.substring(1) : s;
+        boolean wholeFile = head.length < SNIFF_BYTES; // 잘린 앞부분이면 끝의 불완전한 글자는 오류로 보지 않는다
+        CoderResult result = StandardCharsets.UTF_8.newDecoder()
+                .onMalformedInput(CodingErrorAction.REPORT)
+                .onUnmappableCharacter(CodingErrorAction.REPORT)
+                .decode(ByteBuffer.wrap(head), CharBuffer.allocate(head.length), wholeFile);
+        return result.isError() ? CP949 : StandardCharsets.UTF_8;
     }
 }

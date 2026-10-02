@@ -1,12 +1,13 @@
 package com.gimpo.bizdash;
 
+import com.gimpo.bizdash.importer.FetchProperties;
 import com.gimpo.bizdash.importer.ImportProperties;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 
 @SpringBootApplication
-@EnableConfigurationProperties(ImportProperties.class)
+@EnableConfigurationProperties({ImportProperties.class, FetchProperties.class})
 public class GimpoBizDashboardApplication {
 
     public static void main(String[] args) {
