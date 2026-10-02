@@ -1,0 +1,21 @@
+spring:
+  datasource:
+    # 로컬 파일 DB. 서버를 껐다 켜도 적재한 데이터가 남는다. (MySQL 등으로 바꿀 땐 url/driver만 교체)
+    url: jdbc:h2:file:./data/gimpo-biz;MODE=MySQL;DB_CLOSE_ON_EXIT=FALSE
+    username: sa
+    password:
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        jdbc:
+          batch_size: 500
+        order_inserts: true
+
+app:
+  import:
+    path:            # 예) --app.import.path=import/  (CSV 파일 또는 폴더)
+    region-keyword: 김포시
+    batch-size: 500
