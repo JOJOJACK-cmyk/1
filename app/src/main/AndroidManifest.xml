@@ -39,7 +39,6 @@
             android:excludeFromRecents="true"
             android:exported="false"
             android:launchMode="singleTask"
-            android:screenOrientation="portrait"
             android:taskAffinity="" />
 
         <receiver
