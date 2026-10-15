@@ -9,6 +9,7 @@ import android.content.pm.ServiceInfo
 import android.media.AudioAttributes
 import android.media.MediaPlayer
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
@@ -31,7 +32,8 @@ class AlarmService : Service() {
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         val alarmId = intent?.getIntExtra(AlarmScheduler.EXTRA_ALARM_ID, -1) ?: -1
-        val problemCount = AlarmRepository(this).get(alarmId)?.problemCount
+        val alarm = AlarmRepository(this).get(alarmId)
+        val problemCount = alarm?.problemCount
             ?: ringingProblemCount
             ?: Alarm.DEFAULT_PROBLEM_COUNT
         ringingProblemCount = problemCount
@@ -44,7 +46,7 @@ class AlarmService : Service() {
         }
 
         // 이미 울리는 중에 다른 알람이 오면 소리는 그대로 이어간다.
-        if (player == null) startSound()
+        if (player == null) startSound(alarm?.ringtoneUri?.let(Uri::parse))
         if (vibrator == null) startVibration()
         return START_NOT_STICKY
     }
@@ -61,22 +63,28 @@ class AlarmService : Service() {
         super.onDestroy()
     }
 
-    private fun startSound() {
-        val uri = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM)
-            ?: RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE)
-            ?: return
-        player = try {
-            MediaPlayer().apply {
-                setAudioAttributes(ALARM_AUDIO_ATTRIBUTES)
-                setDataSource(this@AlarmService, uri)
-                setWakeMode(this@AlarmService, PowerManager.PARTIAL_WAKE_LOCK)
-                isLooping = true
-                prepare()
-                start()
+    /** 선택한 알람음을 재생하고, 실패하면(파일 삭제 등) 기본 알람음으로 대신한다. */
+    private fun startSound(selected: Uri?) {
+        val candidates = listOfNotNull(
+            selected,
+            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALARM),
+            RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE),
+        ).distinct()
+        for (uri in candidates) {
+            val mediaPlayer = MediaPlayer()
+            try {
+                mediaPlayer.setAudioAttributes(ALARM_AUDIO_ATTRIBUTES)
+                mediaPlayer.setDataSource(this, uri)
+                mediaPlayer.setWakeMode(this, PowerManager.PARTIAL_WAKE_LOCK)
+                mediaPlayer.isLooping = true
+                mediaPlayer.prepare()
+                mediaPlayer.start()
+                player = mediaPlayer
+                return
+            } catch (e: Exception) {
+                Log.e(TAG, "알람 소리를 재생하지 못했습니다: $uri", e)
+                mediaPlayer.release()
             }
-        } catch (e: Exception) {
-            Log.e(TAG, "알람 소리를 재생하지 못했습니다", e)
-            null
         }
     }
 

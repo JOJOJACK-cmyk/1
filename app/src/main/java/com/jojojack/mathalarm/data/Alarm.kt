@@ -7,6 +7,7 @@ import java.util.Calendar
  *
  * @param repeatDays 반복 요일 (Calendar.SUNDAY..Calendar.SATURDAY). 비어 있으면 한 번만 울린다.
  * @param problemCount 알람을 끄기 위해 맞혀야 하는 문제 수.
+ * @param ringtoneUri 알람음 URI. null이면 기기 기본 알람음.
  */
 data class Alarm(
     val id: Int,
@@ -15,6 +16,7 @@ data class Alarm(
     val repeatDays: Set<Int> = emptySet(),
     val enabled: Boolean = true,
     val problemCount: Int = DEFAULT_PROBLEM_COUNT,
+    val ringtoneUri: String? = null,
 ) {
     val isRepeating: Boolean get() = repeatDays.isNotEmpty()
 

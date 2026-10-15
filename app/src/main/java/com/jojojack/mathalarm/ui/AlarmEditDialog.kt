@@ -1,5 +1,7 @@
 package com.jojojack.mathalarm.ui
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,6 +30,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.Dialog
 import androidx.compose.ui.window.DialogProperties
@@ -50,6 +54,12 @@ fun AlarmEditDialog(
     )
     var repeatDays by remember { mutableStateOf(initial.repeatDays) }
     var problemCount by remember { mutableIntStateOf(initial.problemCount) }
+    var ringtoneUri by remember { mutableStateOf(initial.ringtoneUri) }
+    val context = LocalContext.current
+    val ringtoneName = remember(ringtoneUri) { ringtoneTitle(context, ringtoneUri) }
+    val ringtonePicker = rememberLauncherForActivityResult(PickRingtone()) { result ->
+        if (result is PickRingtone.Picked) ringtoneUri = result.uri
+    }
 
     Dialog(onDismissRequest = onDismiss, properties = DialogProperties(usePlatformDefaultWidth = false)) {
         Surface(
@@ -111,6 +121,24 @@ fun AlarmEditDialog(
                     ) { Text("+", style = MaterialTheme.typography.titleLarge) }
                 }
 
+                SectionTitle("알람음")
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { ringtonePicker.launch(ringtoneUri) }
+                        .padding(vertical = 8.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                ) {
+                    Text(
+                        ringtoneName,
+                        style = MaterialTheme.typography.bodyLarge,
+                        maxLines = 1,
+                        overflow = TextOverflow.Ellipsis,
+                        modifier = Modifier.weight(1f),
+                    )
+                    Text("변경", color = MaterialTheme.colorScheme.primary)
+                }
+
                 Spacer(Modifier.padding(top = 16.dp))
                 Row(modifier = Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     if (!isNew) {
@@ -127,6 +155,7 @@ fun AlarmEditDialog(
                                 minute = timeState.minute,
                                 repeatDays = repeatDays,
                                 problemCount = problemCount,
+                                ringtoneUri = ringtoneUri,
                             ),
                         )
                     }) { Text("저장") }

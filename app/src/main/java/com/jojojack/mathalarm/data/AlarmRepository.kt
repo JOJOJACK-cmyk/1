@@ -43,6 +43,7 @@ class AlarmRepository(context: Context) {
         put("repeatDays", JSONArray(alarm.repeatDays.sorted()))
         put("enabled", alarm.enabled)
         put("problemCount", alarm.problemCount)
+        alarm.ringtoneUri?.let { put("ringtoneUri", it) }
     }
 
     private fun fromJson(json: JSONObject): Alarm {
@@ -54,6 +55,7 @@ class AlarmRepository(context: Context) {
             repeatDays = (0 until days.length()).map { days.getInt(it) }.toSet(),
             enabled = json.optBoolean("enabled", true),
             problemCount = json.optInt("problemCount", Alarm.DEFAULT_PROBLEM_COUNT),
+            ringtoneUri = if (json.has("ringtoneUri")) json.getString("ringtoneUri") else null,
         )
     }
 
